@@ -9,7 +9,7 @@ const { Server } = require('socket.io');
 
 const app = express();
 app.use(cors({
-  origin: 'http://localhost:3000',  // Allow requests from your frontend URL
+  origin: '*',  // Allow requests from your frontend URL
   methods: ['GET', 'POST', 'PUT', 'DELETE'],  // Allow specific HTTP methods
   credentials: true,  // If you're using cookies or authentication
 }));

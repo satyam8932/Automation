@@ -49,4 +49,37 @@ const joinRoom = async (req, res) => {
   res.status(200).json({ message: 'Joined room successfully', room });
 };
 
-module.exports = { assignRoom, deassignRoom, joinRoom };
+// Fetch assigned rooms for the current user
+const getUserAssignedRooms = async (req, res) => {
+  try {
+    const userId = req.user.id; // Assuming req.user is populated from auth middleware
+
+    const user = await User.findByPk(userId, {
+      include: [
+        {
+          model: Room,
+          as: 'rooms',  // Ensure this matches the alias used in your model
+          attributes: ['id', 'name'], // Only include necessary room fields
+          through: { attributes: [] }, // Hide join table attributes
+        },
+      ],
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Clean the data and only return essential room info
+    const assignedRooms = user.rooms.map(room => ({
+      id: room.id,
+      name: room.name
+    }));
+
+    res.status(200).json({ rooms: assignedRooms });
+  } catch (error) {
+    console.error('Error fetching assigned rooms:', error);
+    res.status(500).json({ message: 'Failed to fetch assigned rooms' });
+  }
+};
+
+module.exports = { assignRoom, deassignRoom, joinRoom, getUserAssignedRooms };

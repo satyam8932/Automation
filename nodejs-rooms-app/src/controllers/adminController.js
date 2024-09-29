@@ -49,26 +49,26 @@ const getAllUsers = async (req, res) => {
   }
 };
 
-  // Fetch users with the rooms they are assigned to
-  const getUsersWithRooms = async (req, res) => {
-    try {
-      const users = await User.findAll({
-        include: [
-          {
-            model: Room,
-            as: 'rooms',  // Adjust this alias if necessary based on your associations
-            through: {
-              attributes: [],  // This hides any join table attributes
-            },
-            attributes: ['id', 'name'],  // Only include necessary room fields
+// Fetch users with the rooms they are assigned to
+const getUsersWithRooms = async (req, res) => {
+  try {
+    const users = await User.findAll({
+      include: [
+        {
+          model: Room,
+          as: 'rooms',  // Adjust this alias if necessary based on your associations
+          through: {
+            attributes: [],  // This hides any join table attributes
           },
-        ],
-      });
+          attributes: ['id', 'name'],  // Only include necessary room fields
+        },
+      ],
+    });
 
-      res.status(200).json({ users });
-    } catch (error) {
-      res.status(500).json({ message: 'Failed to fetch users with rooms', error });
-    }
-  };
+    res.status(200).json({ users });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch users with rooms', error });
+  }
+};
 
 module.exports = { createRoom, deleteRoom, getAllRooms, getAllUsers, getUsersWithRooms };
