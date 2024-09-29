@@ -51,7 +51,6 @@ const getAllUsers = async (req, res) => {
 
   // Fetch users with the rooms they are assigned to
   const getUsersWithRooms = async (req, res) => {
-    console.log('inseide getuser')
     try {
       const users = await User.findAll({
         include: [
