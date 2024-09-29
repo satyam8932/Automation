@@ -63,9 +63,27 @@ export default function AssignRoom() {
       alert('User assigned to room successfully!');
       setSelectedUser('');
       setSelectedRoom('');
+      refreshUsersWithRooms();  // Refresh the list after assigning
     } catch (error) {
       alert('Error assigning room');
     }
+  };
+
+  // Function to deassign a room from a user
+  const deassignRoom = async (userId: number, roomId: number) => {
+    try {
+      await axiosInstance.post('/api/admin/deassign-room', { userId, roomId });
+      alert('Room deassigned successfully!');
+      refreshUsersWithRooms();  // Refresh the list after deassigning
+    } catch (error) {
+      alert('Error deassigning room');
+    }
+  };
+
+  // Function to refresh the users with rooms list after any changes
+  const refreshUsersWithRooms = async () => {
+    const response = await axiosInstance.get('/api/admin/users-with-rooms');
+    setUsersWithRooms(response.data.users);
   };
 
   return (
@@ -80,12 +98,12 @@ export default function AssignRoom() {
         </CardHeader>
         <CardContent className="space-y-4">
           {/* User Selection */}
-          <Select onValueChange={(value : any) => setSelectedUser(value)} value={selectedUser}>
+          <Select onValueChange={(value: any) => setSelectedUser(value)} value={selectedUser}>
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Select User" />
             </SelectTrigger>
             <SelectContent>
-              {users.map((user : any) => (
+              {users.map((user: any) => (
                 <SelectItem key={user.id} value={user.id.toString()}>
                   {user.username}
                 </SelectItem>
@@ -94,12 +112,12 @@ export default function AssignRoom() {
           </Select>
 
           {/* Room Selection */}
-          <Select onValueChange={(value : any) => setSelectedRoom(value)} value={selectedRoom}>
+          <Select onValueChange={(value: any) => setSelectedRoom(value)} value={selectedRoom}>
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Select Room" />
             </SelectTrigger>
             <SelectContent>
-              {rooms.map((room : any) => (
+              {rooms.map((room: any) => (
                 <SelectItem key={room.id} value={room.id.toString()}>
                   {room.name}
                 </SelectItem>
@@ -119,25 +137,38 @@ export default function AssignRoom() {
             <TableRow>
               <TableCell>User</TableCell>
               <TableCell>Assigned Rooms</TableCell>
+              <TableCell>Actions</TableCell>
             </TableRow>
           </TableHeader>
           <TableBody>
             {usersWithRooms.length > 0 ? (
-              usersWithRooms.map((user : any) => (
+              usersWithRooms.map((user: any) => (
                 <TableRow key={user.id}>
                   <TableCell>{user.username}</TableCell>
                   <TableCell>
                     {user.rooms && user.rooms.length > 0 ? (
-                      user.rooms.map((room : any) => room.name).join(', ')
+                      user.rooms.map((room: any) => room.name).join(', ')
                     ) : (
                       'No rooms assigned'
                     )}
+                  </TableCell>
+                  <TableCell>
+                    {user.rooms && user.rooms.length > 0 && user.rooms.map((room: any) => (
+                      <Button
+                        key={room.id}
+                        onClick={() => deassignRoom(user.id, room.id)}
+                        variant="destructive"
+                        className="ml-2"
+                      >
+                        Remove {room.name}
+                      </Button>
+                    ))}
                   </TableCell>
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={2}>No users assigned to any rooms.</TableCell>
+                <TableCell colSpan={3}>No users assigned to any rooms.</TableCell>
               </TableRow>
             )}
           </TableBody>
