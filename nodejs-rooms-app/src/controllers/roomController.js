@@ -15,6 +15,20 @@ const assignRoom = async (req, res) => {
   }
 };
 
+// De-assign (Revoke) a user from a room
+const deassignRoom = async (req, res) => {
+  const { userId, roomId } = req.body;
+  const room = await Room.findByPk(roomId);
+  const user = await User.findByPk(userId);
+
+  if (room && user) {
+    await room.removeUser(user);  // Removes the association between the room and the user
+    res.status(200).json({ message: 'User de-assigned from room' });
+  } else {
+    res.status(404).json({ message: 'Room or User not found' });
+  }
+};
+
 // Join a room (for users)
 const joinRoom = async (req, res) => {
   const { roomId } = req.body;
@@ -35,4 +49,4 @@ const joinRoom = async (req, res) => {
   res.status(200).json({ message: 'Joined room successfully', room });
 };
 
-module.exports = { assignRoom, joinRoom };
+module.exports = { assignRoom, deassignRoom, joinRoom };

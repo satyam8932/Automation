@@ -1,4 +1,5 @@
 const Room = require('../models/room');
+const User = require('../models/user');
 const bcrypt = require('bcryptjs');
 
 // Create a new room
@@ -28,4 +29,47 @@ const deleteRoom = async (req, res) => {
   }
 };
 
-module.exports = { createRoom, deleteRoom };
+// Get All Rooms Controller
+const getAllRooms = async (req, res) => {
+  try {
+    const rooms = await Room.findAll();
+    res.status(200).json({ rooms });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch rooms' });
+  }
+};
+
+// Get All Users Controller
+const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.findAll();
+    res.status(200).json({ users });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch users' });
+  }
+};
+
+  // Fetch users with the rooms they are assigned to
+  const getUsersWithRooms = async (req, res) => {
+    console.log('inseide getuser')
+    try {
+      const users = await User.findAll({
+        include: [
+          {
+            model: Room,
+            as: 'rooms',  // Adjust this alias if necessary based on your associations
+            through: {
+              attributes: [],  // This hides any join table attributes
+            },
+            attributes: ['id', 'name'],  // Only include necessary room fields
+          },
+        ],
+      });
+
+      res.status(200).json({ users });
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to fetch users with rooms', error });
+    }
+  };
+
+module.exports = { createRoom, deleteRoom, getAllRooms, getAllUsers, getUsersWithRooms };

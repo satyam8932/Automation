@@ -4,9 +4,16 @@ const authRoutes = require('./routes/auth');
 const roomRoutes = require('./routes/room');
 const adminRoutes = require('./routes/admin');
 const http = require('http');
+const cors = require('cors');
 const { Server } = require('socket.io');
 
 const app = express();
+app.use(cors({
+  origin: 'http://localhost:3000',  // Allow requests from your frontend URL
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],  // Allow specific HTTP methods
+  credentials: true,  // If you're using cookies or authentication
+}));
+
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
@@ -26,7 +33,6 @@ app.use('/api/admin', adminRoutes);
 // WebSocket setup
 io.on('connection', (socket) => {
   console.log('A user connected');
-
   // Handle user joining a room
   socket.on('joinRoom', (roomId) => {
     socket.join(roomId);
@@ -48,7 +54,7 @@ io.on('connection', (socket) => {
 });
 
 // Start the server and sync the database
-sequelize.sync({ force: true }).then(() => {
+sequelize.sync().then(() => {
   server.listen(5001, () => {
     console.log('Server running on port 5001');
   });
