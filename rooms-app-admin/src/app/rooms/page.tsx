@@ -91,7 +91,7 @@ export default function RoomManagement() {
           <TableHeader>
             <TableRow>
               <TableCell>Room Name</TableCell>
-              <TableCell className="text-right">Actions</TableCell>
+              <TableCell>Actions</TableCell>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -99,7 +99,7 @@ export default function RoomManagement() {
               rooms.map((room) => (
                 <TableRow key={room.id}>
                   <TableCell>{room.name}</TableCell>
-                  <TableCell className="text-right">
+                  <TableCell>
                     <Button
                       variant="destructive"
                       onClick={() => deleteRoom(room.id)}
