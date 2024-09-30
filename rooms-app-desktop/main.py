@@ -4,7 +4,8 @@ from tkinter import Tk, Label, Button, StringVar, Listbox, Frame, ttk
 from pynput import keyboard
 import pyautogui
 
-baseURL = 'https://vcm5hsbw-5000.inc1.devtunnels.ms'
+baseURL = 'http://147.79.115.171:5000'
+
 sio = socketio.Client()
 
 mapped_coords = {"button1": None, "button2": None}
