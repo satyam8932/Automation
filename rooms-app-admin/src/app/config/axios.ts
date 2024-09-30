@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const axiosInstance = axios.create({
-  baseURL: 'http://localhost:5001',  // Adjust according to your backend URL
+  baseURL: 'http://localhost:5000',  // Adjust according to your backend URL
 });
 
 // Interceptor to add the Authorization header with Bearer token for all requests
