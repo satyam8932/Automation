@@ -1,8 +1,9 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { baseURL } from './baseURL';
 
 const axiosInstance = axios.create({
-  baseURL: 'https://vcm5hsbw-5001.inc1.devtunnels.ms',  // Update with your backend URL
+  baseURL: baseURL,  // Update with your backend URL
 });
 
 // Add token to every request

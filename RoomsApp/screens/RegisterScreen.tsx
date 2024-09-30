@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, TextInput, TouchableOpacity, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, TextInput, TouchableOpacity, Text, StyleSheet, ActivityIndicator, Image } from 'react-native';
 import axiosInstance from '../config/axios';
 
 const RegisterScreen = ({ navigation }: any) => {
@@ -22,6 +22,12 @@ const RegisterScreen = ({ navigation }: any) => {
 
   return (
     <View style={styles.container}>
+      {/* Logo in the center */}
+      <Image 
+        source={require('../assets/logo.png')}  // Replace with your logo path
+        style={styles.logo}
+      />
+
       <Text style={styles.title}>Register</Text>
       
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
@@ -29,6 +35,7 @@ const RegisterScreen = ({ navigation }: any) => {
       <TextInput
         style={styles.input}
         placeholder="Username"
+        placeholderTextColor="#666"  // Placeholder color set explicitly
         value={username}
         onChangeText={setUsername}
         autoCapitalize="none"
@@ -37,6 +44,7 @@ const RegisterScreen = ({ navigation }: any) => {
       <TextInput
         style={styles.input}
         placeholder="Password"
+        placeholderTextColor="#666"  // Placeholder color set explicitly
         value={password}
         onChangeText={setPassword}
         secureTextEntry
@@ -52,7 +60,7 @@ const RegisterScreen = ({ navigation }: any) => {
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.button, styles.backButton]}
+            style={[styles.button, styles.loginButton]}
             onPress={() => navigation.navigate('Login')}
           >
             <Text style={styles.buttonText}>Back to Login</Text>
@@ -70,6 +78,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#f4f4f4',
   },
+  logo: {
+    width: 400,  // Adjust size as needed
+    height: 100, // Adjust size as needed
+    alignSelf: 'center',
+    marginBottom: 30,
+  },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
@@ -84,7 +98,7 @@ const styles = StyleSheet.create({
     borderColor: '#ddd',
     borderRadius: 5,
     backgroundColor: '#fff',
-    color: '#000',  // Ensure input text is black
+    color: '#000',  // Input text color
   },
   errorText: {
     color: 'red',
@@ -103,8 +117,8 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 16,
   },
-  backButton: {
-    backgroundColor: '#6c757d',
+  loginButton: {
+    backgroundColor: '#28a745',
   },
 });
 

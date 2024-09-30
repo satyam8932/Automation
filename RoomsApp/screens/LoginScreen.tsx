@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, TextInput, TouchableOpacity, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, TextInput, TouchableOpacity, Text, StyleSheet, ActivityIndicator, Image } from 'react-native';
 import axiosInstance from '../config/axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -24,6 +24,12 @@ const LoginScreen = ({ navigation }: any) => {
 
   return (
     <View style={styles.container}>
+      {/* Logo in the center */}
+      <Image 
+        source={require('../assets/logo.png')}  // Replace with your logo path
+        style={styles.logo}
+      />
+
       <Text style={styles.title}>Login</Text>
       
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
@@ -31,6 +37,7 @@ const LoginScreen = ({ navigation }: any) => {
       <TextInput
         style={styles.input}
         placeholder="Username"
+        placeholderTextColor="#666"  // Placeholder color set explicitly
         value={username}
         onChangeText={setUsername}
         autoCapitalize="none"
@@ -39,6 +46,7 @@ const LoginScreen = ({ navigation }: any) => {
       <TextInput
         style={styles.input}
         placeholder="Password"
+        placeholderTextColor="#666"  // Placeholder color set explicitly
         value={password}
         onChangeText={setPassword}
         secureTextEntry
@@ -72,12 +80,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#f4f4f4',
   },
+  logo: {
+    width: 400,  // Adjust size as needed
+    height: 100, // Adjust size as needed
+    alignSelf: 'center',
+    marginBottom: 30,
+  },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
     marginBottom: 20,
     textAlign: 'center',
-    color: '#000' 
+    color: '#000', 
   },
   input: {
     marginBottom: 15,
@@ -86,7 +100,7 @@ const styles = StyleSheet.create({
     borderColor: '#ddd',
     borderRadius: 5,
     backgroundColor: '#fff',
-    color: '#000' 
+    color: '#000',  // Input text color
   },
   errorText: {
     color: 'red',
