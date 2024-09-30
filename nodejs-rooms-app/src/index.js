@@ -33,17 +33,24 @@ app.use('/api/admin', adminRoutes);
 // WebSocket setup
 io.on('connection', (socket) => {
   console.log('User connected');
+  
   // Handle user joining a room
   socket.on('joinRoom', (roomId) => {
     socket.join(roomId);
     console.log(`User joined room: ${roomId}`);
   });
 
-  // Handle volume click event
+  // Handle volume click event and broadcast specific events
   socket.on('volumeClick', (data) => {
     const { roomId, event } = data;
     console.log(`Volume click in room ${roomId}:`, event);
-    io.to(roomId).emit('volumeEvent', event);  // Broadcast event to the room
+    
+    // Emit the specific event based on volume change
+    if (event === 'volume_up') {
+      io.to(roomId).emit('volume_up');  // Emit 'volume_up' event
+    } else if (event === 'volume_down') {
+      io.to(roomId).emit('volume_down');  // Emit 'volume_down' event
+    }
   });
 
   // Handle disconnect
