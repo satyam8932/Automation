@@ -32,7 +32,7 @@ app.use('/api/admin', adminRoutes);
 
 // WebSocket setup
 io.on('connection', (socket) => {
-  console.log('A user connected');
+  console.log('User connected');
   // Handle user joining a room
   socket.on('joinRoom', (roomId) => {
     socket.join(roomId);
@@ -40,22 +40,21 @@ io.on('connection', (socket) => {
   });
 
   // Handle volume click event
-  socket.on('volumeClick', (dataString) => {
-    const data = JSON.parse(dataString);
+  socket.on('volumeClick', (data) => {
     const { roomId, event } = data;
     console.log(`Volume click in room ${roomId}:`, event);
     io.to(roomId).emit('volumeEvent', event);  // Broadcast event to the room
   });
 
   // Handle disconnect
-  socket.on('disconnect', () => {
+  socket.on('leaveRoom', () => {
     console.log('User disconnected');
   });
 });
 
 // Start the server and sync the database
 sequelize.sync().then(() => {
-  server.listen(5001, () => {
-    console.log('Server running on port 5001');
+  server.listen(5000, () => {
+    console.log('Server running on port 5000');
   });
 }).catch(err => console.log(err));
