@@ -1,0 +1,4 @@
+python-socketio
+pynput
+pyautogui
+requests
