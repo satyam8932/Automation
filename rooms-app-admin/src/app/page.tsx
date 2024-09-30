@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import axios from './config/axios';  // Adjust to the correct path for axios configuration
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,7 +10,15 @@ export default function AdminLogin() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('token'));  // Check if token exists
+  const [isLoggedIn, setIsLoggedIn] = useState(false);  // Initialize as false
+
+  useEffect(() => {
+    // Check if we're running in the browser and if there's a token in localStorage
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('token');
+      setIsLoggedIn(!!token);  // Set logged-in state based on token existence
+    }
+  }, []);
 
   const handleLogin = async () => {
     try {
@@ -23,8 +31,10 @@ export default function AdminLogin() {
       // Extract token from response
       const { token } = response.data;
 
-      // Store the token in localStorage
-      localStorage.setItem('token', token);
+      // Store the token in localStorage (client-side only)
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('token', token);
+      }
 
       // Clear any errors
       setError('');
@@ -40,7 +50,9 @@ export default function AdminLogin() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('token');  // Clear the token
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('token');  // Clear the token
+    }
     setIsLoggedIn(false);  // Set login state to false
     window.location.href = '/';  // Redirect to the login page
   };

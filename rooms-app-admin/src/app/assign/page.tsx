@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 export default function AssignRoom() {
   const [usersWithRooms, setUsersWithRooms] = useState([]);
@@ -89,7 +90,14 @@ export default function AssignRoom() {
   return (
     <div className="container mx-auto p-8 space-y-8">
       <h1 className="text-3xl font-bold text-center">Assign User to Room</h1>
-
+      <div className='flex space-x-2'>
+        <Link href="/rooms">
+          <Button>Rooms</Button>
+        </Link>
+        <Link href="/assign">
+          <Button>Assign</Button>
+        </Link>
+      </div>
       {/* Card for assigning users to rooms */}
       <Card className="p-6 shadow-lg">
         <CardHeader>
