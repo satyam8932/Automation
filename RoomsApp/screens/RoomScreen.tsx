@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, ScrollView, StyleSheet, ActivityIndicator, TouchableOpacity, RefreshControl } from 'react-native';
 import axiosInstance from '../config/axios';
+import { useFocusEffect } from '@react-navigation/native';
 
 const RoomsScreen = ({ navigation }: any) => {
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-
 
   // Fetch rooms assigned to the user
   const fetchRooms = async () => {
@@ -22,14 +22,16 @@ const RoomsScreen = ({ navigation }: any) => {
     }
   };
 
-  useEffect(() => {
-    fetchRooms();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchRooms();  // Fetch rooms whenever the screen is focused
+    }, [])
+  );
 
   // Handle pull to refresh
   const onRefresh = () => {
     setRefreshing(true);
-    fetchRooms(); // Refresh the room list
+    fetchRooms();  // Refresh the room list
   };
 
   const handleRoomSelect = (room: any) => {
