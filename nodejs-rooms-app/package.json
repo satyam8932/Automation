@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "node src/index.js",
+    "start": "pm2 start src/index.js -i max --name nodejs-rooms-app",
     "dev": "nodemon src/index.js",
     "lint": "eslint.",
     "lint:fix": "eslint. --fix",
@@ -15,14 +15,17 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@socket.io/redis-adapter": "^8.3.0",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "express": "^4.21.0",
     "jsonwebtoken": "^9.0.2",
     "pg": "^8.13.0",
     "pg-hstore": "^2.3.4",
+    "redis": "^4.7.0",
     "sequelize": "^6.37.3",
-    "socket.io": "^4.8.0"
+    "socket.io": "^4.8.0",
+    "socket.io-redis": "^5.4.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.7"
