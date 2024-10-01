@@ -131,6 +131,12 @@ io.on('connection', (socket) => {
   });
 });
 
+app.route('/')
+  // Display a simple message when accessing the root URL
+  .get((req, res) => {
+    res.send('Welcome to the server!');
+  });
+
 // Start the server and sync the database
 sequelize.sync().then(() => {
   server.listen(5000, () => {
