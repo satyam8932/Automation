@@ -1,8 +1,10 @@
+import os
 import socketio
 import requests
-from tkinter import Tk, Label, Button, StringVar, Listbox, Frame, ttk
+from tkinter import Tk, Label, Button, StringVar, Listbox, Frame, ttk, PhotoImage
 from pynput import keyboard
 import pyautogui
+import sys
 
 baseURL = 'http://147.79.115.171:5000'
 
@@ -120,15 +122,31 @@ def show_room_controls(room_id):
 
 # Tkinter GUI Layout
 root = Tk()
-root.title("Remote Control Desktop App")
+root.title("Rooms App")
 root.geometry("800x600")
 root.configure(bg="#f0f0f0")
+
+# Correct image path for PyInstaller
+def resource_path(relative_path):
+    """ Get the absolute path to the resource, works for PyInstaller """
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
+
+# Load image
+logo_image = PhotoImage(file=resource_path("assets/logo.png"))
 
 # Login Frame
 login_frame = ttk.Frame(root, padding="20")
 login_frame.pack(fill="both", expand=True)
 
-ttk.Label(login_frame, text="Remote Control Desktop App", font=("Arial", 18, "bold")).pack(pady=20)
+# Add logo to the login frame
+logo_label = Label(login_frame, image=logo_image)
+logo_label.pack(pady=10)
+
+ttk.Label(login_frame, text="Rooms App", font=("Arial", 18, "bold")).pack(pady=20)
 
 ttk.Label(login_frame, text="Username").pack()
 username_var = StringVar()
