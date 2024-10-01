@@ -42,35 +42,49 @@ app.use('/api/auth', authRoutes);
 app.use('/api/room', roomRoutes);
 app.use('/api/admin', adminRoutes);
 
-// In-memory storage for user connections (could be a database in production)
-const userConnections = {};
+// Redis-based storage for user connections
+const redisClient = pubClient;
+
+// Store user connection in Redis
+const setUserConnection = async (username, deviceType, socketId) => {
+  const userKey = `user:${username}`;
+  const userData = { [deviceType]: socketId };
+  await redisClient.hSet(userKey, userData);
+};
+
+// Get user connection data from Redis
+const getUserConnection = async (username) => {
+  const userKey = `user:${username}`;
+  return await redisClient.hGetAll(userKey);
+};
+
+// Remove user connection from Redis
+const removeUserConnection = async (username, deviceType) => {
+  const userKey = `user:${username}`;
+  await redisClient.hDel(userKey, deviceType);
+};
 
 // WebSocket setup
 io.on('connection', (socket) => {
   console.log('A user connected');
   
   // Handle user login event
-  socket.on('login', ({ username, deviceType }) => {
-    if (!userConnections[username]) {
-      userConnections[username] = { android: null, desktop: null };
+  socket.on('login', async ({ username, deviceType }) => {
+    const currentConnections = await getUserConnection(username);
+
+    // Disconnect previous connection if exists
+    if (deviceType === 'android' && currentConnections.android) {
+      io.to(currentConnections.android).disconnect();
+      console.log(`Previous Android connection for ${username} disconnected`);
     }
 
-    if (deviceType === 'android') {
-      if (userConnections[username].android) {
-        // Disconnect the previous Android connection
-        userConnections[username].android.disconnect();
-        console.log(`Previous Android connection for ${username} disconnected`);
-      }
-      userConnections[username].android = socket;
-    } else if (deviceType === 'desktop') {
-      if (userConnections[username].desktop) {
-        // Disconnect the previous Desktop connection
-        userConnections[username].desktop.disconnect();
-        console.log(`Previous Desktop connection for ${username} disconnected`);
-      }
-      userConnections[username].desktop = socket;
+    if (deviceType === 'desktop' && currentConnections.desktop) {
+      io.to(currentConnections.desktop).disconnect();
+      console.log(`Previous Desktop connection for ${username} disconnected`);
     }
 
+    // Store the new connection
+    await setUserConnection(username, deviceType, socket.id);
     console.log(`${username} connected from ${deviceType}`);
     socket.emit('loginSuccess', { message: `Logged in as ${username} on ${deviceType}` });
   });
@@ -94,14 +108,18 @@ io.on('connection', (socket) => {
   });
 
   // Handle disconnection
-  socket.on('disconnect', () => {
+  socket.on('disconnect', async () => {
     console.log('User disconnected');
-    // Optionally, clean up the `userConnections` map for the disconnected user
-    for (let username in userConnections) {
-      if (userConnections[username].android === socket) {
-        userConnections[username].android = null;
-      } else if (userConnections[username].desktop === socket) {
-        userConnections[username].desktop = null;
+    
+    // Identify the user and device type from the connection
+    for (const username of Object.keys(userConnections)) {
+      const connections = await getUserConnection(username);
+      if (connections.android === socket.id) {
+        await removeUserConnection(username, 'android');
+        console.log(`${username} Android disconnected`);
+      } else if (connections.desktop === socket.id) {
+        await removeUserConnection(username, 'desktop');
+        console.log(`${username} Desktop disconnected`);
       }
     }
   });
