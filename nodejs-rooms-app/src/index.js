@@ -14,8 +14,8 @@ console.log('Initializing app...');
 // Initialize Express app
 const app = express();
 app.use(cors({
-  origin: '*',  
-  methods: ['GET', 'POST', 'PUT', 'DELETE'], 
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true,
 }));
 
@@ -67,20 +67,22 @@ const removeUserConnection = async (username, deviceType) => {
 // WebSocket setup
 io.on('connection', (socket) => {
   console.log('A user connected');
-  
+
   // Handle user login event
   socket.on('login', async ({ username, deviceType }) => {
     const currentConnections = await getUserConnection(username);
 
-    // Disconnect previous connection if exists
+    // Check if there is already an active connection with the same deviceType
     if (deviceType === 'android' && currentConnections.android) {
-      io.to(currentConnections.android).disconnect();
-      console.log(`Previous Android connection for ${username} disconnected`);
+      console.log(`Login attempt blocked: ${username} is already connected from Android`);
+      socket.emit('loginError', { message: `Already connected on Android. Cannot login again.` });
+      return;  // Prevent further execution
     }
 
     if (deviceType === 'desktop' && currentConnections.desktop) {
-      io.to(currentConnections.desktop).disconnect();
-      console.log(`Previous Desktop connection for ${username} disconnected`);
+      console.log(`Login attempt blocked: ${username} is already connected from Desktop`);
+      socket.emit('loginError', { message: `Already connected on Desktop. Cannot login again.` });
+      return;  // Prevent further execution
     }
 
     // Store the new connection
@@ -93,7 +95,7 @@ io.on('connection', (socket) => {
   socket.on('volumeClick', (data) => {
     const { roomId, event } = data;
     console.log(`Volume click in room ${roomId}: ${event}`);
-    
+
     if (event === 'volume_up') {
       io.to(roomId).emit('volume_up');
     } else if (event === 'volume_down') {
@@ -110,10 +112,14 @@ io.on('connection', (socket) => {
   // Handle disconnection
   socket.on('disconnect', async () => {
     console.log('User disconnected');
-    
-    // Identify the user and device type from the connection
-    for (const username of Object.keys(userConnections)) {
+
+    // Iterate through all users in Redis to find the one matching this socket.id
+    const allKeys = await redisClient.keys('user:*');
+
+    for (const userKey of allKeys) {
+      const username = userKey.split(':')[1];
       const connections = await getUserConnection(username);
+
       if (connections.android === socket.id) {
         await removeUserConnection(username, 'android');
         console.log(`${username} Android disconnected`);
