@@ -37,6 +37,7 @@ def login_to_room():
     username = username_var.get()
     password = password_var.get()
 
+    # Perform login request
     response = requests.post(f"{baseURL}/api/auth/login", json={
         "username": username,
         "password": password
@@ -106,11 +107,13 @@ def show_room_controls(room_id):
     mapping_frame.pack(side="left", fill="both", expand=True, padx=20, pady=20)
 
     # Connect to socket
+    username = username_var.get()  # Get the username from login
     try:
         sio.connect(baseURL)
+        sio.emit('login', {'username': username, 'deviceType': 'desktop'})  # Pass username and device type
         sio.emit('joinRoom', room_id)
         status_label.config(text="Connected to room", foreground="green")
-        print("Connected to room", room_id)
+        print(f"Connected to room {room_id} as {username}")
     except Exception as e:
         status_label.config(text=f"Failed to connect: {str(e)}", foreground="red")
         print("Connection failed:", e)
