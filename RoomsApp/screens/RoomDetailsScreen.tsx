@@ -48,6 +48,7 @@ const RoomDetailsScreen = ({ route }: any) => {
       volumeDownListener.remove();
       socket.off('loginError');  // Remove the loginError listener
       socket.emit('leaveRoom', room.id);
+      socket.disconnect();
     };
   }, [room.id, username, navigation]);
 
