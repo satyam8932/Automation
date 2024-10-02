@@ -15,10 +15,10 @@ selected_room = None
 mapping_in_progress = False
 current_mapping_button = None
 
-# Function to perform click at specified coordinates
-def perform_click(x, y):
+# Function to perform double left click at specified coordinates
+def perform_double_click(x, y):
     current_pos = pyautogui.position()
-    pyautogui.click(x, y)
+    pyautogui.doubleClick(x, y)
     pyautogui.moveTo(current_pos)  # Move back to original position
 
 # Register event listeners for volume up and volume down
@@ -26,13 +26,30 @@ def perform_click(x, y):
 def on_volume_up():
     print("Received volume_up event")
     if mapped_coords["button1"]:
-        perform_click(*mapped_coords["button1"])
+        perform_double_click(*mapped_coords["button1"])
 
 @sio.on('volume_down')
 def on_volume_down():
     print("Received volume_down event")
     if mapped_coords["button2"]:
-        perform_click(*mapped_coords["button2"])
+        perform_double_click(*mapped_coords["button2"])
+
+# Function to handle user registration
+def register_user():
+    username = reg_username_var.get()
+    password = reg_password_var.get()
+
+    # Perform registration request
+    response = requests.post(f"{baseURL}/api/auth/register", json={
+        "username": username,
+        "password": password
+    })
+
+    if response.status_code == 200:
+        status_label.config(text="Registration Successful", foreground="green")
+        switch_to_login()  # After successful registration, go back to login
+    else:
+        status_label.config(text="Registration Failed", foreground="red")
 
 # Function to handle login to room
 def login_to_room():
@@ -103,7 +120,7 @@ def update_button_labels():
         else:
             label.config(text=f"{button_key.capitalize()} Coordinates: Not Mapped")
 
-# Function to show room controls and map buttons
+# Function to handle user login event and error
 def show_room_controls(room_id):
     room_frame.pack_forget()
     mapping_frame.pack(side="left", fill="both", expand=True, padx=20, pady=20)
@@ -113,12 +130,33 @@ def show_room_controls(room_id):
     try:
         sio.connect(baseURL)
         sio.emit('login', {'username': username, 'deviceType': 'desktop'})  # Pass username and device type
+
+        # Handle login error (already connected)
+        @sio.on('loginError')
+        def on_login_error(data):
+            status_label.config(text=data['message'], foreground="red")
+            sio.disconnect()  # Disconnect the user
+
+            # Move back to room selection screen
+            mapping_frame.pack_forget()
+            room_frame.pack(side="left", fill="both", expand=True, padx=20, pady=20)
+
         sio.emit('joinRoom', room_id)
         status_label.config(text="Connected to room", foreground="green")
         print(f"Connected to room {room_id} as {username}")
     except Exception as e:
         status_label.config(text=f"Failed to connect: {str(e)}", foreground="red")
         print("Connection failed:", e)
+
+# Switch to registration frame
+def switch_to_register():
+    login_frame.pack_forget()
+    register_frame.pack(fill="both", expand=True)
+
+# Switch to login frame
+def switch_to_login():
+    register_frame.pack_forget()
+    login_frame.pack(fill="both", expand=True)
 
 # Tkinter GUI Layout
 root = Tk()
@@ -128,7 +166,6 @@ root.configure(bg="#f0f0f0")
 
 # Correct image path for PyInstaller
 def resource_path(relative_path):
-    """ Get the absolute path to the resource, works for PyInstaller """
     try:
         base_path = sys._MEIPASS
     except Exception:
@@ -157,9 +194,26 @@ password_var = StringVar()
 ttk.Entry(login_frame, textvariable=password_var, show="*", width=30).pack(pady=5)
 
 ttk.Button(login_frame, text="Login", command=login_to_room).pack(pady=10)
+ttk.Button(login_frame, text="Register", command=switch_to_register).pack(pady=10)
 
 status_label = ttk.Label(login_frame, text="", font=("Arial", 12))
 status_label.pack(pady=10)
+
+# Register Frame
+register_frame = ttk.Frame(root, padding="20")
+
+ttk.Label(register_frame, text="Register", font=("Arial", 18, "bold")).pack(pady=20)
+
+ttk.Label(register_frame, text="Username").pack()
+reg_username_var = StringVar()
+ttk.Entry(register_frame, textvariable=reg_username_var, width=30).pack(pady=5)
+
+ttk.Label(register_frame, text="Password").pack()
+reg_password_var = StringVar()
+ttk.Entry(register_frame, textvariable=reg_password_var, show="*", width=30).pack(pady=5)
+
+ttk.Button(register_frame, text="Submit", command=register_user).pack(pady=10)
+ttk.Button(register_frame, text="Back to Login", command=switch_to_login).pack(pady=10)
 
 # Room Selection Frame
 room_frame = ttk.Frame(root, padding="20")
