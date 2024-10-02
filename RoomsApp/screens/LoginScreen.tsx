@@ -15,9 +15,12 @@ const LoginScreen = ({ navigation }: any) => {
       const response = await axiosInstance.post('/api/auth/login', { username, password });
       await AsyncStorage.setItem('token', response.data.token);
       setLoading(false);
-      navigation.navigate('Rooms');
+
+      // Navigate to RoomsScreen and pass the username as a parameter
+      navigation.navigate('Rooms', { username });
     } catch (err) {
       setError('Invalid credentials');
+      console.log(err)
       setLoading(false);
     }
   };
@@ -25,34 +28,33 @@ const LoginScreen = ({ navigation }: any) => {
   return (
     <View style={styles.container}>
       {/* Logo in the center */}
-      <Image 
+      <Image
         source={require('../assets/logo.png')}  // Replace with your logo path
         style={styles.logo}
       />
 
       <Text style={styles.title}>Login</Text>
-      
+
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
       <TextInput
         style={styles.input}
         placeholder="Username"
-        placeholderTextColor="#666"  // Placeholder color set explicitly
+        placeholderTextColor="#666"
         value={username}
         onChangeText={setUsername}
         autoCapitalize="none"
       />
-      
+
       <TextInput
         style={styles.input}
         placeholder="Password"
-        placeholderTextColor="#666"  // Placeholder color set explicitly
+        placeholderTextColor="#666"
         value={password}
         onChangeText={setPassword}
         secureTextEntry
       />
 
-      {/* Show a loading indicator while logging in */}
       {loading ? (
         <ActivityIndicator size="large" color="#0000ff" />
       ) : (
@@ -91,7 +93,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 20,
     textAlign: 'center',
-    color: '#000', 
+    color: '#000',
   },
   input: {
     marginBottom: 15,

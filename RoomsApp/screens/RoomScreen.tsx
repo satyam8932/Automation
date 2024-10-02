@@ -3,10 +3,13 @@ import { View, Text, ScrollView, StyleSheet, ActivityIndicator, TouchableOpacity
 import axiosInstance from '../config/axios';
 import { useFocusEffect } from '@react-navigation/native';
 
-const RoomsScreen = ({ navigation }: any) => {
+const RoomsScreen = ({ navigation, route  }: any) => {
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  // Get the username from the route parameters
+  const { username } = route.params;
 
   // Fetch rooms assigned to the user
   const fetchRooms = async () => {
@@ -35,7 +38,7 @@ const RoomsScreen = ({ navigation }: any) => {
   };
 
   const handleRoomSelect = (room: any) => {
-    navigation.navigate('RoomDetails', { room });  // Pass room details to the new screen
+    navigation.navigate('RoomDetails', { room, username });  // Pass room details to the new screen
   };
 
   return (
