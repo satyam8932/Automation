@@ -1,10 +1,11 @@
 import os
 import socketio
 import requests
-from tkinter import Tk, Label, Button, StringVar, Listbox, Frame, ttk, PhotoImage
+from tkinter import Tk, Label, Button, StringVar, Listbox, Frame, Text, ttk, PhotoImage, END
 from pynput import keyboard
 import pyautogui
 import sys
+from datetime import datetime
 
 baseURL = 'http://147.79.115.171:5000'
 
@@ -21,6 +22,9 @@ def perform_double_click(x, y):
     pyautogui.doubleClick(x, y)
     pyautogui.moveTo(current_pos)  # Move back to original position
 
+    # Log the click to the display box
+    log_click()
+
 # Register event listeners for volume up and volume down
 @sio.on('volume_up')
 def on_volume_up():
@@ -33,6 +37,12 @@ def on_volume_down():
     print("Received volume_down event")
     if mapped_coords["button2"]:
         perform_double_click(*mapped_coords["button2"])
+
+# Function to log click events with timestamp
+def log_click():
+    current_time = datetime.now().strftime("%d.%m.%Y-%H:%M:%S")
+    log_text.insert(END, f"{current_time}/ Click\n")
+    log_text.see(END)  # Auto-scroll to the end
 
 # Function to handle user registration
 def register_user():
@@ -52,7 +62,6 @@ def register_user():
     else:
         register_status_label.config(text="Registration Failed", foreground="red")
         register_status_label.update()  # Ensure the UI gets updated
-
 
 # Function to handle login to room
 def login_to_room():
@@ -221,7 +230,6 @@ register_status_label.pack(pady=10)
 ttk.Button(register_frame, text="Submit", command=register_user).pack(pady=10)
 ttk.Button(register_frame, text="Back to Login", command=switch_to_login).pack(pady=10)
 
-
 # Room Selection Frame
 room_frame = ttk.Frame(root, padding="20")
 
@@ -232,7 +240,7 @@ room_listbox.pack(pady=10)
 confirm_button = ttk.Button(room_frame, text="Confirm Room", command=confirm_room, state="disabled")
 confirm_button.pack(pady=10)
 
-# Button Mapping Frame
+# Button Mapping and Log Frame
 mapping_frame = ttk.Frame(root, padding="20")
 
 instruction_label = ttk.Label(mapping_frame, text="Button Mapping", font=("Arial", 16, "bold"))
@@ -244,6 +252,7 @@ button1_label.pack(pady=5)
 button2_label = ttk.Label(mapping_frame, text="Button 2 Coordinates: Not Mapped", font=("Arial", 12))
 button2_label.pack(pady=5)
 
+# Function to start mapping buttons
 def start_mapping(button_key):
     global mapping_in_progress, current_mapping_button
     mapping_in_progress = True
@@ -259,6 +268,10 @@ def reset_coordinates():
     update_button_labels()
 
 ttk.Button(mapping_frame, text="Reset Coordinates", command=reset_coordinates).pack(pady=10)
+
+# Add the text widget to display logs
+log_text = Text(mapping_frame, height=20, width=60, bg="black", fg="green", font=("Consolas", 10))
+log_text.pack(pady=10)
 
 # Start the keyboard listener
 keyboard_listener = keyboard.Listener(on_press=on_key_press)
