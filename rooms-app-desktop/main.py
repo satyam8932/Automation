@@ -46,10 +46,13 @@ def register_user():
     })
 
     if response.status_code == 200:
-        status_label.config(text="Registration Successful", foreground="green")
-        switch_to_login()  # After successful registration, go back to login
+        register_status_label.config(text="Registration Successful", foreground="green")
+        register_status_label.update()  # Ensure the UI gets updated
+        root.after(2000, switch_to_login)  # Switch to login screen after 2 seconds
     else:
-        status_label.config(text="Registration Failed", foreground="red")
+        register_status_label.config(text="Registration Failed", foreground="red")
+        register_status_label.update()  # Ensure the UI gets updated
+
 
 # Function to handle login to room
 def login_to_room():
@@ -212,8 +215,12 @@ ttk.Label(register_frame, text="Password").pack()
 reg_password_var = StringVar()
 ttk.Entry(register_frame, textvariable=reg_password_var, show="*", width=30).pack(pady=5)
 
+register_status_label = ttk.Label(register_frame, text="", font=("Arial", 12))  # Status label for registration
+register_status_label.pack(pady=10)
+
 ttk.Button(register_frame, text="Submit", command=register_user).pack(pady=10)
 ttk.Button(register_frame, text="Back to Login", command=switch_to_login).pack(pady=10)
+
 
 # Room Selection Frame
 room_frame = ttk.Frame(root, padding="20")
