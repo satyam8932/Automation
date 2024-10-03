@@ -4,41 +4,43 @@ import { useNavigation } from '@react-navigation/native';
 import io from 'socket.io-client';
 import { baseURL } from '../config/baseURL';
 
-const socket = io(baseURL);
 const { VolumeServiceModule } = NativeModules;
 
 const RoomDetailsScreen = ({ route }: any) => {
   const { room, username } = route.params;
   const [connectedStatus, setConnectedStatus] = useState('Not Connected');
   const navigation = useNavigation();
+  let socket: any;
 
-  useEffect(() => {
-    // Start the VolumeService
-    VolumeServiceModule.startService();
+  const initializeSocketConnection = () => {
+    // Initialize the socket inside a function to rebuild it when necessary
+    socket = io(baseURL, {
+      reconnection: false, // Disable automatic reconnection to handle reconnect manually
+    });
 
-    // Send login event with deviceType 'android' and the username
-    socket.emit('login', { username, deviceType: 'android' });
+    // Socket connected handler
+    socket.on('connect', () => {
+      setConnectedStatus('Connected');
+      socket.emit('login', { username, deviceType: 'android' });
+    });
 
-    // Listen for loginError event
-    socket.on('loginError', (data) => {
-      // Handle login error
+    // Handle login errors (e.g., user already logged in elsewhere)
+    socket.on('loginError', (data: any) => {
       Alert.alert('Login Error', data.message, [
         {
           text: 'OK',
           onPress: () => {
-            // Navigate back to the previous screen on error
-            navigation.goBack();
+            // Clean up the socket when user gets kicked out
+            handleUserKickedOut();
           },
         },
       ]);
     });
 
-    setConnectedStatus("Connected");
-
-    // Join the room
+    // Join the room after connecting
     socket.emit('joinRoom', room.id);
 
-    // Listen for volume button events
+    // Add volume button listeners
     const volumeUpListener = DeviceEventEmitter.addListener('volume_up', () => {
       console.log('Volume Up Click');
       socket.emit('volumeClick', { roomId: room.id, event: 'volume_up' });
@@ -49,16 +51,51 @@ const RoomDetailsScreen = ({ route }: any) => {
       socket.emit('volumeClick', { roomId: room.id, event: 'volume_down' });
     });
 
+    // Cleanup function for volume listeners and socket when component unmounts
     return () => {
-      // Clean up listeners and leave the room
       volumeUpListener.remove();
       volumeDownListener.remove();
-      socket.off('loginError');
-      socket.emit('leaveRoom', room.id);
+      socket.emit('leaveRoom', room.id); // Leave room on unmount
       socket.disconnect();
+      socket.off(); // Clear all event listeners from the socket
+    };
+  };
 
-      // Stop the VolumeService
-      VolumeServiceModule.stopService();
+  const handleUserKickedOut = () => {
+    if (socket) {
+      // Disconnect socket to ensure clean reconnection on re-entry
+      socket.emit('leaveRoom', room.id); // Ensure user leaves the room properly
+      socket.disconnect();
+      socket.off(); // Clear all event listeners
+    }
+
+    // Navigate back to the previous screen
+    navigation.goBack();
+  };
+
+  useEffect(() => {
+    // Start the VolumeService and initialize socket connection
+    if (VolumeServiceModule && VolumeServiceModule.startService) {
+      VolumeServiceModule.startService();
+    } else {
+      console.warn('VolumeServiceModule is not available.');
+    }
+
+    // Initialize socket connection
+    initializeSocketConnection();
+
+    return () => {
+      // Clean up everything on component unmount
+      if (socket) {
+        socket.emit('leaveRoom', room.id);
+        socket.disconnect();
+        socket.off();
+      }
+
+      // Stop the VolumeService if it was started
+      if (VolumeServiceModule && VolumeServiceModule.stopService) {
+        VolumeServiceModule.stopService();
+      }
     };
   }, [room.id, username, navigation]);
 
