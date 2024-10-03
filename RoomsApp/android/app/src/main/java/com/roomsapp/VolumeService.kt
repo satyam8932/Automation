@@ -14,6 +14,8 @@ import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import android.widget.Toast
+import android.content.Context
 
 class VolumeService : Service() {
     private lateinit var mediaSession: MediaSessionCompat
@@ -51,10 +53,12 @@ class VolumeService : Service() {
                     -1 -> {
                         Log.d("VolumeService", "Volume Down Pressed")
                         sendVolumeEvent("volume_down")
+                        showToast("Volume Down Pressed")
                     }
                     1 -> {
                         Log.d("VolumeService", "Volume Up Pressed")
                         sendVolumeEvent("volume_up")
+                        showToast("Volume Up Pressed")
                     }
                     else -> Log.d("VolumeService", "Volume button released")
                 }
@@ -113,5 +117,10 @@ class VolumeService : Service() {
 
             startForeground(1, notification)
         }
+    }
+
+    // Function to show a Toast message
+    private fun showToast(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 }

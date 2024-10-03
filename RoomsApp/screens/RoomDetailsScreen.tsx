@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { DeviceEventEmitter, View, Text, StyleSheet, Alert, NativeModules } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import io from 'socket.io-client';
@@ -9,6 +9,7 @@ const { VolumeServiceModule } = NativeModules;
 
 const RoomDetailsScreen = ({ route }: any) => {
   const { room, username } = route.params;
+  const [connectedStatus, setConnectedStatus] = useState('Not Connected');
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -31,6 +32,8 @@ const RoomDetailsScreen = ({ route }: any) => {
         },
       ]);
     });
+
+    setConnectedStatus("Connected");
 
     // Join the room
     socket.emit('joinRoom', room.id);
@@ -62,6 +65,7 @@ const RoomDetailsScreen = ({ route }: any) => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Room: {room.name}</Text>
+      <Text style={styles.title}>{connectedStatus}</Text>
       <Text style={styles.infoText}>Volume Up for Left Click</Text>
       <Text style={styles.infoText}>Volume Down for Right Click</Text>
     </View>
