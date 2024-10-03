@@ -16,10 +16,14 @@ selected_room = None
 mapping_in_progress = False
 current_mapping_button = None
 
-# Function to perform double left click at specified coordinates
-def perform_double_click(x, y):
-    current_pos = pyautogui.position()
-    pyautogui.doubleClick(x, y)
+# Function to perform double left click at specified coordinates or at the current mouse position
+def perform_double_click(x=None, y=None):
+    if x is None or y is None:
+        # Get the current mouse position if coordinates are not provided
+        x, y = pyautogui.position()
+    
+    current_pos = pyautogui.position()  # Save the original position
+    pyautogui.doubleClick(x, y)  # Perform the double click at the specified or current position
     pyautogui.moveTo(current_pos)  # Move back to original position
 
     # Log the click to the display box
@@ -31,12 +35,16 @@ def on_volume_up():
     print("Received volume_up event")
     if mapped_coords["button1"]:
         perform_double_click(*mapped_coords["button1"])
+    else:
+        perform_double_click()
 
 @sio.on('volume_down')
 def on_volume_down():
     print("Received volume_down event")
     if mapped_coords["button2"]:
         perform_double_click(*mapped_coords["button2"])
+    else:
+        perform_double_click()
 
 # Function to log click events with timestamp
 def log_click():
