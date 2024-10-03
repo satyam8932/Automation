@@ -1,27 +1,31 @@
 import React, { useEffect } from 'react';
-import { DeviceEventEmitter, View, Text, StyleSheet, Alert } from 'react-native';
+import { DeviceEventEmitter, View, Text, StyleSheet, Alert, NativeModules } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import io from 'socket.io-client';
 import { baseURL } from '../config/baseURL';
 
 const socket = io(baseURL);
+const { VolumeServiceModule } = NativeModules;
 
 const RoomDetailsScreen = ({ route }: any) => {
-  const { room, username } = route.params;  // Get username and room from route params
-  const navigation = useNavigation();  // Use navigation to go back
+  const { room, username } = route.params;
+  const navigation = useNavigation();
 
   useEffect(() => {
+    // Start the VolumeService
+    VolumeServiceModule.startService();
+
     // Send login event with deviceType 'android' and the username
     socket.emit('login', { username, deviceType: 'android' });
 
     // Listen for loginError event
     socket.on('loginError', (data) => {
-      // Display an alert with the login error message
+      // Handle login error
       Alert.alert('Login Error', data.message, [
         {
           text: 'OK',
           onPress: () => {
-            // Navigate back to the previous screen
+            // Navigate back to the previous screen on error
             navigation.goBack();
           },
         },
@@ -33,12 +37,12 @@ const RoomDetailsScreen = ({ route }: any) => {
 
     // Listen for volume button events
     const volumeUpListener = DeviceEventEmitter.addListener('volume_up', () => {
-      console.log("Volume Up Click");
+      console.log('Volume Up Click');
       socket.emit('volumeClick', { roomId: room.id, event: 'volume_up' });
     });
 
     const volumeDownListener = DeviceEventEmitter.addListener('volume_down', () => {
-      console.log("Volume Down Click");
+      console.log('Volume Down Click');
       socket.emit('volumeClick', { roomId: room.id, event: 'volume_down' });
     });
 
@@ -46,9 +50,12 @@ const RoomDetailsScreen = ({ route }: any) => {
       // Clean up listeners and leave the room
       volumeUpListener.remove();
       volumeDownListener.remove();
-      socket.off('loginError');  // Remove the loginError listener
+      socket.off('loginError');
       socket.emit('leaveRoom', room.id);
       socket.disconnect();
+
+      // Stop the VolumeService
+      VolumeServiceModule.stopService();
     };
   }, [room.id, username, navigation]);
 

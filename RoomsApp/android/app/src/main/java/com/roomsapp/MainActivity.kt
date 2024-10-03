@@ -12,7 +12,7 @@ import com.facebook.react.modules.core.DeviceEventManagerModule
 import android.os.Bundle
 import android.view.KeyEvent
 import android.widget.Toast
-
+import android.content.Intent
 class MainActivity : ReactActivity() {
 
   /**
@@ -34,29 +34,33 @@ class MainActivity : ReactActivity() {
     */
   override fun onCreate(savedInstanceState: Bundle?) {
       super.onCreate(savedInstanceState)
+
+      // Start the volume service
+      val intent = Intent(this, VolumeService::class.java)
+      startService(intent)
     }
 
   // Handle key events such as volume buttons
-  override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-    when (keyCode) {
-        KeyEvent.KEYCODE_VOLUME_DOWN -> {
-            sendEventToReactNative("volume_down")
-            Toast.makeText(applicationContext, "Volume Down Key Pressed", Toast.LENGTH_SHORT).show()
-        }
-        KeyEvent.KEYCODE_VOLUME_UP -> {
-            sendEventToReactNative("volume_up")
-            Toast.makeText(applicationContext, "Volume Up Key Pressed", Toast.LENGTH_SHORT).show()
-        }
-    }
-    return super.onKeyDown(keyCode, event)
-  }
+  // override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+  //   when (keyCode) {
+  //       KeyEvent.KEYCODE_VOLUME_DOWN -> {
+  //           sendEventToReactNative("volume_down")
+  //           Toast.makeText(applicationContext, "Volume Down Key Pressed", Toast.LENGTH_SHORT).show()
+  //       }
+  //       KeyEvent.KEYCODE_VOLUME_UP -> {
+  //           sendEventToReactNative("volume_up")
+  //           Toast.makeText(applicationContext, "Volume Up Key Pressed", Toast.LENGTH_SHORT).show()
+  //       }
+  //   }
+  //   return super.onKeyDown(keyCode, event)
+  // }
 
   // Send the event to React Native
-  private fun sendEventToReactNative(eventName: String) {
-      val reactContext: ReactContext? = getReactInstanceManager().currentReactContext
-      reactContext?.let {
-          it.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
-              .emit(eventName, null)
-      }
-  } 
+  // private fun sendEventToReactNative(eventName: String) {
+  //     val reactContext: ReactContext? = getReactInstanceManager().currentReactContext
+  //     reactContext?.let {
+  //         it.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+  //             .emit(eventName, null)
+  //     }
+  // } 
 }
