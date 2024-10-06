@@ -6,4 +6,4 @@
 - Admin is built using Nextjs + Shadcn + Tailwindcss
 
 
-Native Code for android app is written in Kotlin for running a background process to detect volume button clicks and send them through socketio.
+Native Code for android app is written in Kotlin for running a background process continously for detection of volume button clicks on lockscreen and background, sending them through socketio.
